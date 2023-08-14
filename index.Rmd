@@ -688,7 +688,19 @@ Row
 ### **Rekapitulasi Mahasiswa Baru di setiap Fakultas**
 
 ```{r}
-maba <- read_excel("G:/My Drive/#PMB/2022/Dashboard/maba.xlsx")
+maba <- db |>
+  select(fakultas, prodi, jalur, jenjang, nim) |>
+  filter(nim == "diterima") |>
+  select(-nim) |>
+  rbind(
+    db1 |>
+      left_join(kode, by = c("jenjang", "prodi")) |>
+      select(fakultas, prodi, jalur, jenjang, status) |>
+      filter(status == "Mahasiswa") |>
+      select(-status)
+  )
+
+#maba <- read_excel("G:/My Drive/#PMB/2022/Dashboard/maba.xlsx")
 maba <- maba %>%
   mutate(fakultas = case_when(
     fakultas == "Hukum" ~ "1_Hukum",
@@ -698,17 +710,38 @@ maba <- maba %>%
     fakultas == "FEB" ~ "5_FEB",
     fakultas == "FISIP" ~ "6_FISIP",
     fakultas == "Pascasarjana" ~ "7_Pascasarjana",
-    fakultas == "Kedokteran" ~ "8_Kedokteran"),
+    fakultas == "Kedokteran" ~ "8_Kedokteran",
+    fakultas == "1_Hukum" ~ "1_Hukum",
+    fakultas == "2_FKIP" ~ "2_FKIP",
+    fakultas == "3_Teknik" ~ "3_Teknik",
+    fakultas == "4_Pertanian" ~ "4_Pertanian",
+    fakultas == "5_FEB" ~ "5_FEB",
+    fakultas == "6_FISIP" ~ "6_FISIP",
+    fakultas == "7_Pascasarjana" ~ "7_Pascasarjana",
+    fakultas == "8_Kedokteran" ~ "8_Kedokteran"),
     jalur = case_when(
-      jalur == "SNMPTN" ~ "1_SNMPTN",
-      jalur == "SBMPTN" ~ "2_SBMPTN",
+      jalur == "SNBP" ~ "1_SNBP",
+      jalur == "SNBT" ~ "2_SNBT",
       jalur == "SMMPTN" ~ "3_SMMPTN",
-      jalur == "UMMD3" ~ "4_UMMD3",
-      jalur == "JAJ" ~ "5_JAJ",
-      jalur == "ADIK" ~ "6_ADIK",
-      jalur == "PRESTASI" ~ "7_PRESTASI",
-      jalur == "S2" ~ "8_S2",
-      jalur == "S3" ~ "9_S3"),
+      jalur == "SMBNU" ~ "4_SMBNU",
+      jalur == "UMMD3" ~ "5_UMMD3",
+      jalur == "JAJ" ~ "6_JAJ",
+      jalur == "ADIK" ~ "7_ADIK",
+      jalur == "JPL" ~ "8_JPL",
+      jalur == "S2" ~ "91_S2",
+      jalur == "S3" ~ "92_S3",
+      jalur == "PROFESI DOKTER" ~ "93_PROFESI DOKTER",
+      jalur == "1_SNBP" ~ "1_SNBP",
+      jalur == "2_SNBT" ~ "2_SNBT",
+      jalur == "3_SMMPTN" ~ "3_SMMPTN",
+      jalur == "4_SMBNU" ~ "4_SMBNU",
+      jalur == "5_UMMD3" ~ "5_UMMD3",
+      jalur == "6_JAJ" ~ "6_JAJ",
+      jalur == "7_ADIK" ~ "7_ADIK",
+      jalur == "8_JPL" ~ "8_JPL",
+      jalur == "91_S2" ~ "91_S2",
+      jalur == "92_S3" ~ "92_S3",
+      jalur == "93_PROFESI DOKTER" ~ "93_PROFESI DOKTER"),
     prodi = toupper(prodi))
 
 data <- maba %>%
@@ -716,17 +749,17 @@ data <- maba %>%
   summarize(n =  n()) %>%
   pivot_wider(names_from = jalur, values_from = n)
 
-data <- data[,c(1:4,7,8,5,6,9,10)]
+data <- data[,c(1:5,8,9,6,7,10:12)]
 
 data[is.na(data)] <- 0
-names(data) <- c("Fakultas", "SNMPTN", "SBMPTN", "SMMPTN", "UMM D3", "Alih Jenjang", "ADIK", "PRESTASI", "S2", "S3")
+names(data) <- c("Fakultas", "SNBP", "SNBT", "SMMPTN", "SMBNU", "UMM D3", "Alih Jenjang", "ADIK", "JPL", "S2", "S3", "PROFESI DOKTER")
 data$Fakultas <- c("Hukum", "FKIP", "Teknik", "Pertanian", "FEB", "FISIP", "Pascasarjana", "Kedokteran")
 data <- adorn_totals(data, where = c("row", "col") , name = c("Total", "Total"))
 
 kable(data) %>%
   kable_styling(bootstrap_options = "striped", full_width = F,
                 latex_options = "scale_down") %>%
-  add_header_above(c(" " = 1, "Jalur Masuk" = 9," " = 1))
+  add_header_above(c(" " = 1, "Jalur Masuk" = 11," " = 1))
 
 data %>%
   download_this(
@@ -750,26 +783,26 @@ data <- maba %>%
   summarize(n =  n()) %>%
   pivot_wider(names_from = jalur, values_from = n)
 
-data <- data[,c(1:6,9,10,7,8,11,12)]
+data <- data[,c(1,3,2,4:7,10,11,8,9,12:14)]
 
 data[is.na(data)] <- 0
 data <- data[,-1]
-data <- data[, c(2, 1, 3:11)]
-names(data) <- c("Fakultas/Prodi", "Jenjang", "SNMPTN", "SBMPTN", "SMMPTN", "UMM D3", "Alih Jenjang", "ADIK", "PRESTASI", "S2", "S3")
+
+names(data) <- c("Fakultas/Prodi", "Jenjang", "SNBP", "SNBT", "SMMPTN", "SMBNU", "UMM D3", "Alih Jenjang", "ADIK", "JPL", "S2", "S3", "PROFESI DOKTER")
 data <- adorn_totals(data, where = c("row", "col") , name = c("Total", "Total"))
 
 kable(data, row.names = F) %>%
   kable_styling(bootstrap_options = "striped", full_width = F,
                 latex_options = "scale_down") %>%
-  add_header_above(c(" " = 2, "Jalur Masuk" = 9, " " = 1)) %>%
-  pack_rows("Hukum", 1, 1, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Keguruan dan Ilmu Pendidikan", 2, 20, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Teknik", 20, 26, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Pertanian", 27, 31, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Ekonomi dan Bisnis", 32, 39, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Ilmu Sosial dan Ilmu Politik", 40, 42, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Pascasarjana", 43, 58, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Kedokteran", 59, 63, label_row_css = "background-color: #666; color: #fff;")
+  add_header_above(c(" " = 2, "Jalur Masuk" = 11, " " = 1)) %>%
+  pack_rows("Hukum", 1, kum[1], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Keguruan dan Ilmu Pendidikan", kum[1]+1, kum[2], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Teknik", kum[2]+1, kum[3], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Pertanian", kum[3]+1, kum[4], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Ekonomi dan Bisnis", kum[4]+1, kum[5], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Ilmu Sosial dan Ilmu Politik", kum[5]+1, kum[6], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Pascasarjana", kum[6]+1, kum[7], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Kedokteran", kum[7]+1, kum[8], label_row_css = "background-color: #666; color: #fff;")
 
 data %>%
   download_this(
