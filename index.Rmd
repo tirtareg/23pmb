@@ -17,10 +17,10 @@ library(tidyverse)
 library(readxl)
 library(downloadthis)
 
-db <- read_excel("G:/My Drive/#PMB/2022/Dashboard/maba22_4web.xlsx")
+db <- read_excel("maba23_4web.xlsx")
 
 data <- db %>%
-  filter(jalur %in% c("1_SNMPTN", "2_SBMPTN", "3_SMMPTN")) %>%
+  filter(jalur %in% c("1_SNBP", "2_SNBT", "3_SMMPTN", "4_SMBNU")) %>%
   group_by(jalur, jenjang) %>%
   summarize(lolos = n(),
             regis = sum(registrasi == "registrasi", na.rm = T),
@@ -28,15 +28,15 @@ data <- db %>%
 
 
 db0 <- read_excel("data_umm.xlsx")
+
 a <- db0 %>%
-  select(jalur, jenjang, jk, p1)
-b <- db0 %>%
-  select(jalur, jenjang, jk, p2) %>%
-  mutate( p1 = p2) %>%
-  select(-p2)
-db_minat <- rbind(a, b)
-db_minat <- na.omit(db_minat) %>%
-  group_by(jalur, jenjang, p1) %>%
+  select(jalur, jenjang, jk, p1, p2) %>%
+  pivot_longer(cols = p1 : p2, names_to = "pil", values_to = "prodi")
+
+a <- na.omit(a)
+
+db_minat <- na.omit(a) %>%
+  group_by(jalur, jenjang, prodi) %>%
   summarise(peminat = n())
 
 db_nama <- read_excel("data_lulus_diterima_umm.xlsx")
@@ -57,16 +57,16 @@ db_terima <- na.omit(db1) %>%
   summarise(diterima = n())
 
 db_all <- db_minat %>%
-  left_join(db_lulus, by =c("jalur", "jenjang", "p1" = "prodi"))
+  left_join(db_lulus, by =c("jalur", "jenjang", "prodi"))
 
 db_all <- db_all %>%
-  left_join(db_terima, by =c("jalur", "jenjang", "p1" = "prodi"))
+  left_join(db_terima, by =c("jalur", "jenjang", "prodi"))
 
 kode <- read_excel("kode prodi siakad.xlsx")
 
 db_all <- db_all %>%
-  left_join(kode, by = c("jenjang", "p1" = "prodi")) %>%
-  select(jalur, jenjang, fakultas, p1, peminat, lulus, diterima)
+  left_join(kode, by = c("jenjang", "prodi")) %>%
+  select(jalur, jenjang, fakultas, prodi, peminat, lulus, diterima)
 
 db_all[is.na(db_all)] <- 0
 
@@ -76,9 +76,15 @@ data1 <- db_all %>%
             regis = sum(lulus),
             nim = sum(diterima))
 
-data1$jalur <- c("6_ADIK", "5_JAJ", "7_PRESTASI", "8_S2", "9_S3", "4_UMMD3")
+data1$jalur <- c("7_ADIK", "6_JAJ", "8_JPL", "93_Profesi Dokter", "91_S2", "92_S3", "5_UMMD3")
 data <- rbind(data, data1) %>%
   arrange(jalur)
+
+data0 <- data |>
+  group_by(jalur) |>
+  summarise(lolos = sum(lolos),
+            regis = sum(regis),
+            nim = sum(nim))
 
 ```
 
@@ -89,25 +95,25 @@ data <- rbind(data, data1) %>%
 Row
 ---
 
-### snmptn {.value-box}
+### snbp {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$lolos[1], big.mark = " "), "", sep = " "),
-  caption = "SNMPTN",
+  value = paste(format(data0$lolos[1], big.mark = " "), "", sep = " "),
+  caption = "SNBP",
   icon = "fas fa-thumbs-up",
   color = "blueviolet"
 )
 ```
 
-### sbmptn {.value-box}
+### snbt {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$lolos[2], big.mark = " "), "", sep = " "),
-  caption = "SBMPTN",
+  value = paste(format(data0$lolos[2], big.mark = " "), "", sep = " "),
+  caption = "SNBT",
   icon = "fas fa-thumbs-up",
   color = "brown"
 )
@@ -118,59 +124,71 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$lolos[3], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[3], big.mark = " "), "", sep = " "),
   caption = "SMMPTN",
   icon = "fas fa-thumbs-up",
   color = "burlywood"
 )
 ```
 
-### umm {.value-box}
+### SMBNU {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$regis[4], big.mark = " "), "", sep = " "),
-  caption = "D3",
+  value = paste(format(data0$regis[4], big.mark = " "), "", sep = " "),
+  caption = "SMBNU",
   icon = "fas fa-thumbs-up",
   color = "cadetblue"
 )
 ```
 
-### jaj {.value-box}
+### UMMD3 {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$regis[5], big.mark = " "), "", sep = " "),
-  caption = "Alih Jenjang",
+  value = paste(format(data0$regis[5], big.mark = " "), "", sep = " "),
+  caption = "UMMD3",
   icon = "fas fa-thumbs-up",
   color = "dodgerblue"
 )
 ```
 
-### adik {.value-box}
+### JAJ {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$regis[6], big.mark = " "), "", sep = " "),
-  caption = "ADIK",
+  value = paste(format(data0$regis[6], big.mark = " "), "", sep = " "),
+  caption = "JAJ",
   icon = "fas fa-thumbs-up",
   color = "mediumvioletred"
 )
 ```
 
 
-### prestasi {.value-box}
+### ADIK {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$regis[7], big.mark = " "), "", sep = " "),
-  caption = "Prestasi",
+  value = paste(format(data0$regis[7], big.mark = " "), "", sep = " "),
+  caption = "ADIK",
   icon = "fas fa-thumbs-up",
   color = "cornflowerblue"
+)
+```
+
+### JPL {.value-box}
+
+```{r}
+#sudah <- nrow(filter(db, registrasi == "registrasi"))
+valueBox(
+  value = paste(format(data0$regis[8], big.mark = " "), "", sep = " "),
+  caption = "JPL",
+  icon = "fas fa-thumbs-up",
+  color = "darkorange"
 )
 ```
 
@@ -179,10 +197,10 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$regis[8], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$regis[9], big.mark = " "), "", sep = " "),
   caption = "S2",
   icon = "fas fa-thumbs-up",
-  color = "darkorange"
+  color = "darkblue"
 )
 ```
 
@@ -191,10 +209,22 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$regis[9], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$regis[10], big.mark = " "), "", sep = " "),
   caption = "S3",
   icon = "fas fa-thumbs-up",
-  color = "darkseagreen"
+  color = "darkgreen"
+)
+```
+
+### profesi_dokter {.value-box}
+
+```{r}
+#sudah <- nrow(filter(db, registrasi == "registrasi"))
+valueBox(
+  value = paste(format(data0$regis[11], big.mark = " "), "", sep = " "),
+  caption = "Profesi Dokter",
+  icon = "fas fa-thumbs-up",
+  color = "pink"
 )
 ```
 
@@ -205,25 +235,25 @@ valueBox(
 Row
 ---
 
-### snmptn {.value-box}
+### snbp {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[1], big.mark = " "), "", sep = " "),
-  caption = "SNMPTN",
+  value = paste(format(data0$nim[1], big.mark = " "), "", sep = " "),
+  caption = "SNBP",
   icon = "fas fa-thumbs-up",
   color = "blueviolet"
 )
 ```
 
-### sbmptn {.value-box}
+### snbt {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[2], big.mark = " "), "", sep = " "),
-  caption = "SBMPTN",
+  value = paste(format(data0$nim[2], big.mark = " "), "", sep = " "),
+  caption = "SNBT",
   icon = "fas fa-thumbs-up",
   color = "brown"
 )
@@ -234,59 +264,71 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[3], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$nim[3], big.mark = " "), "", sep = " "),
   caption = "SMMPTN",
   icon = "fas fa-thumbs-up",
   color = "burlywood"
 )
 ```
 
-### umm {.value-box}
+### SMBNU {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[4], big.mark = " "), "", sep = " "),
-  caption = "D3",
+  value = paste(format(data0$nim[4], big.mark = " "), "", sep = " "),
+  caption = "SMBNU",
   icon = "fas fa-thumbs-up",
   color = "cadetblue"
 )
 ```
 
-### jaj {.value-box}
+### UMMD3 {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[5], big.mark = " "), "", sep = " "),
-  caption = "Alih Jenjang",
+  value = paste(format(data0$nim[5], big.mark = " "), "", sep = " "),
+  caption = "UMMD3",
   icon = "fas fa-thumbs-up",
   color = "dodgerblue"
 )
 ```
 
-### adik {.value-box}
+### JAJ {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[6], big.mark = " "), "", sep = " "),
-  caption = "ADIK",
+  value = paste(format(data0$nim[6], big.mark = " "), "", sep = " "),
+  caption = "JAJ",
   icon = "fas fa-thumbs-up",
   color = "mediumvioletred"
 )
 ```
 
 
-### prestasi {.value-box}
+### ADIK {.value-box}
 
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[7], big.mark = " "), "", sep = " "),
-  caption = "Prestasi",
+  value = paste(format(data0$nim[7], big.mark = " "), "", sep = " "),
+  caption = "ADIK",
   icon = "fas fa-thumbs-up",
   color = "cornflowerblue"
+)
+```
+
+### JPL {.value-box}
+
+```{r}
+#sudah <- nrow(filter(db, registrasi == "registrasi"))
+valueBox(
+  value = paste(format(data0$nim[8], big.mark = " "), "", sep = " "),
+  caption = "JPL",
+  icon = "fas fa-thumbs-up",
+  color = "darkorange"
 )
 ```
 
@@ -295,10 +337,10 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[8], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$nim[9], big.mark = " "), "", sep = " "),
   caption = "S2",
   icon = "fas fa-thumbs-up",
-  color = "darkorange"
+  color = "darkblue"
 )
 ```
 
@@ -307,10 +349,22 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data$nim[9], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$nim[10], big.mark = " "), "", sep = " "),
   caption = "S3",
   icon = "fas fa-thumbs-up",
-  color = "darkseagreen"
+  color = "darkgreen"
+)
+```
+
+### profesi_dokter {.value-box}
+
+```{r}
+#sudah <- nrow(filter(db, registrasi == "registrasi"))
+valueBox(
+  value = paste(format(data0$nim[11], big.mark = " "), "", sep = " "),
+  caption = "Profesi Dokter",
+  icon = "fas fa-thumbs-up",
+  color = "pink"
 )
 ```
 
@@ -333,8 +387,9 @@ data1 <- na.omit(db_nama) %>%
   group_by(fakultas, jk) %>%
   summarize(total = n()) %>%
   pivot_wider(names_from = jk, values_from = total)
-data1$fakultas <- c("5_FEB", "6_FISIP", "2_FKIP", "8_Kedokteran", "7_Pascasarjana",
-                    "4_Pertanian", "3_Teknik")
+data1[is.na(data1)] <- 0
+
+data1$fakultas <- c("5_FEB", "6_FISIP", "2_FKIP", "1_Hukum", "8_Kedokteran", "7_Pascasarjana", "4_Pertanian", "3_Teknik")
 
 data <- rbind(data, data1) %>%
   group_by(fakultas) %>%
@@ -441,13 +496,19 @@ row
 
 ```{r}
 data1 <- db %>%
-  group_by(fakultas, prodi, jalur) %>%
-  filter(jalur %in% c("1_SNMPTN", "2_SBMPTN", "3_SMMPTN"), !is.na(prodi)) %>%
+  group_by(fakultas, prodi, jalur, jenjang) %>%
+  filter(jalur %in% c("1_SNBP", "2_SNBT", "3_SMMPTN", "4_SMBNU"), !is.na(prodi)) %>%
   summarize(peminat = max(peminat),
             lulus = n(),
             sudah = sum(na.omit(registrasi == "registrasi")),
             belum = lulus - sudah,
-            diterima = sum(na.omit(nim == "diterima")))
+            diterima = sum(na.omit(nim == "diterima"))) %>%
+  group_by(fakultas, prodi, jalur) %>%
+  summarize(peminat = sum(peminat),
+            lulus = sum(lulus),
+            sudah = sum(sudah),
+            belum = sum(belum),
+            diterima = sum(diterima))
 
 fak <- data.frame(kode = c("Hukum", "FKIP", "Teknik", "Pertanian", "FEB",
                            "FISIP", "Pascasarjana", "Kedokteran"),
@@ -455,15 +516,21 @@ fak <- data.frame(kode = c("Hukum", "FKIP", "Teknik", "Pertanian", "FEB",
                                "6_FISIP", "7_Pascasarjana", "8_Kedokteran"))
 
 data2 <- db_all %>%
-  group_by(fakultas, p1, jalur) %>%
+  group_by(fakultas, prodi, jalur, jenjang) %>%
   summarise(peminat = sum(peminat),
             lulus = sum(lulus),
             diterima = sum(diterima)) %>%
   mutate(sudah = lulus,
          belum = 0) %>%
   left_join(fak, by = c("fakultas" = "kode")) %>%
-  group_by(fak, p1, jalur) %>%
+  group_by(fak, prodi, jalur, jenjang) %>%
   summarise(peminat = sum(peminat),
+            lulus = sum(lulus),
+            sudah = sum(sudah),
+            belum = sum(belum),
+            diterima = sum(diterima)) %>%
+  group_by(fak, prodi, jalur) %>%
+  summarize(peminat = sum(peminat),
             lulus = sum(lulus),
             sudah = sum(sudah),
             belum = sum(belum),
@@ -531,7 +598,7 @@ row
 
 data1 <- db %>%
   group_by(fakultas, prodi, jenjang, jalur) %>%
-  filter(jalur %in% c("1_SNMPTN", "2_SBMPTN", "3_SMMPTN"), !is.na(prodi)) %>%
+  filter(jalur %in% c("1_SNBP", "2_SNBT", "3_SMMPTN", "4_SMBNU"), !is.na(prodi)) %>%
   summarize(peminat = max(peminat),
             lulus = n(),
             sudah = sum(na.omit(registrasi == "registrasi")),
@@ -544,14 +611,14 @@ fak <- data.frame(kode = c("Hukum", "FKIP", "Teknik", "Pertanian", "FEB",
                                "6_FISIP", "7_Pascasarjana", "8_Kedokteran"))
 
 data2 <- db_all %>%
-  group_by(fakultas, p1, jenjang, jalur) %>%
+  group_by(fakultas, prodi, jenjang, jalur) %>%
   summarise(peminat = sum(peminat),
             lulus = sum(lulus),
             diterima = sum(diterima)) %>%
   mutate(sudah = lulus,
          belum = 0) %>%
   left_join(fak, by = c("fakultas" = "kode")) %>%
-  group_by(fak, p1, jenjang, jalur) %>%
+  group_by(fak, prodi, jenjang, jalur) %>%
   summarise(peminat = sum(peminat),
             lulus = sum(lulus),
             sudah = sum(sudah),
@@ -571,6 +638,12 @@ data_prod <- data %>%
             belum = sum(belum),
             diterima = sum(diterima))
 
+n_fak <- data_prod %>%
+  group_by(fakultas) %>%
+  summarise(n = n()) %>%
+  mutate(kum = cumsum(n))
+kum <- n_fak$kum
+
 data_prod <- data_prod[, -1]
 
 data_prod$pers_sudah <- round(data_prod$sudah / data_prod$lulus * 100, 0)
@@ -580,18 +653,20 @@ data_prod <- data_prod[,c(1:6, 8:9, 7)]
 
 names(data_prod) <- c("Fakultas/Program Studi", "Jenjang","Peminat", "Lulus", "Ya", "Tidak", "Ya (%)", "Tidak (%)", "Bayar UKT")
 data_prod <- adorn_totals(data_prod, where = "row", name = "Total")
+
+
 kable(data_prod, row.names = F) %>%
   kable_styling(bootstrap_options = "striped", full_width = F,
                 latex_options = "scale_down") %>%
   add_header_above(c(" " = 4, "Registrasi" = 4, " " = 1)) %>%
-  pack_rows("Hukum", 1, 1, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Keguruan dan Ilmu Pendidikan", 2, 20, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Teknik", 20, 26, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Pertanian", 27, 31, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Ekonomi dan Bisnis", 32, 39, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Ilmu Sosial dan Ilmu Politik", 40, 42, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Pascasarjana", 43, 58, label_row_css = "background-color: #666; color: #fff;") %>%
-  pack_rows("Kedokteran", 59, 63, label_row_css = "background-color: #666; color: #fff;")
+  pack_rows("Hukum", 1, kum[1], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Keguruan dan Ilmu Pendidikan", kum[1]+1, kum[2], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Teknik", kum[2]+1, kum[3], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Pertanian", kum[3]+1, kum[4], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Ekonomi dan Bisnis", kum[4]+1, kum[5], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Ilmu Sosial dan Ilmu Politik", kum[5]+1, kum[6], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Pascasarjana", kum[6]+1, kum[7], label_row_css = "background-color: #666; color: #fff;") %>%
+  pack_rows("Kedokteran", kum[7]+1, kum[8], label_row_css = "background-color: #666; color: #fff;")
 
 data_prod %>%
   download_this(
