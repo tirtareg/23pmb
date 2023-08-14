@@ -136,7 +136,7 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data0$regis[4], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[4], big.mark = " "), "", sep = " "),
   caption = "SMBNU",
   icon = "fas fa-thumbs-up",
   color = "cadetblue"
@@ -148,7 +148,7 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data0$regis[5], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[5], big.mark = " "), "", sep = " "),
   caption = "UMMD3",
   icon = "fas fa-thumbs-up",
   color = "dodgerblue"
@@ -160,7 +160,7 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data0$regis[6], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[6], big.mark = " "), "", sep = " "),
   caption = "JAJ",
   icon = "fas fa-thumbs-up",
   color = "mediumvioletred"
@@ -173,7 +173,7 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data0$regis[7], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[7], big.mark = " "), "", sep = " "),
   caption = "ADIK",
   icon = "fas fa-thumbs-up",
   color = "cornflowerblue"
@@ -185,7 +185,7 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data0$regis[8], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[8], big.mark = " "), "", sep = " "),
   caption = "JPL",
   icon = "fas fa-thumbs-up",
   color = "darkorange"
@@ -197,7 +197,7 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data0$regis[9], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[9], big.mark = " "), "", sep = " "),
   caption = "S2",
   icon = "fas fa-thumbs-up",
   color = "darkblue"
@@ -209,7 +209,7 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data0$regis[10], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[10], big.mark = " "), "", sep = " "),
   caption = "S3",
   icon = "fas fa-thumbs-up",
   color = "darkgreen"
@@ -221,7 +221,7 @@ valueBox(
 ```{r}
 #sudah <- nrow(filter(db, registrasi == "registrasi"))
 valueBox(
-  value = paste(format(data0$regis[11], big.mark = " "), "", sep = " "),
+  value = paste(format(data0$lolos[11], big.mark = " "), "", sep = " "),
   caption = "Profesi Dokter",
   icon = "fas fa-thumbs-up",
   color = "pink"
