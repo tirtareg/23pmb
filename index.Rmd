@@ -431,8 +431,6 @@ data %>%
 ```
 
 
-
-
 ```{r eval=FALSE, include=FALSE}
 Row
 ---
@@ -592,10 +590,9 @@ data_fak %>%
 row
 ---
 
-### **Progres registrasi di setiap Program Studi**
+### **Progres registrasi di setiap Jenjang**
 
 ```{r}
-
 data1 <- db %>%
   group_by(fakultas, prodi, jenjang, jalur) %>%
   filter(jalur %in% c("1_SNBP", "2_SNBT", "3_SMMPTN", "4_SMBNU"), !is.na(prodi)) %>%
@@ -623,12 +620,55 @@ data2 <- db_all %>%
             lulus = sum(lulus),
             sudah = sum(sudah),
             belum = sum(belum),
-            diterima = sum(diterima))
+            diterima = sum(diterima)) 
 
 names(data2) <- c("fakultas", "prodi", "jenjang", "jalur", "peminat", "lulus", "sudah", "belum", "diterima")
 
 data <- rbind(data1, data2)
 data$prodi <- toupper(data$prodi)
+
+regis_jenjang <- data |>
+  group_by(jenjang) |>
+  summarise(minat = sum(peminat),
+            lulus = sum(lulus),
+            sudah = sum(sudah),
+            belum = sum(belum),
+            diterima = sum(diterima))
+  
+regis_jenjang <- adorn_totals(regis_jenjang,where = "row", name = "Total")
+regis_jenjang$pers_sudah <- round(regis_jenjang$sudah / regis_jenjang$lulus * 100, 0)
+regis_jenjang$pers_belum <- round(regis_jenjang$belum / regis_jenjang$lulus * 100, 0)
+regis_jenjang$pers_lulus <- round(regis_jenjang$lulus / regis_jenjang$minat * 100, 0)
+
+regis_jenjang <- regis_jenjang %>%
+  select(jenjang, minat, lulus, pers_lulus, sudah, belum, pers_sudah, pers_belum, diterima)
+
+names(regis_jenjang) <- c("Jenjang", "Peminat", "Lulus", "% Lulus", "Sudah", "Belum", "Sudah (%)", "Belum (%)", "Diterima")
+
+kable(regis_jenjang, row.names = F) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F,
+                latex_options = "scale_down") %>%
+  add_header_above(c(" " = 4, "Registrasi" = 4, " " = 1)) 
+
+regis_jenjang %>%
+  download_this(
+    output_name = "progres_reg_per_jenjang",
+    output_extension = ".xlsx",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+
+
+```
+
+row
+---
+
+### **Progres registrasi di setiap Program Studi**
+
+```{r}
 
 data_prod <- data %>%
   group_by(fakultas, prodi, jenjang) %>%
@@ -636,7 +676,8 @@ data_prod <- data %>%
             lulus = sum(lulus),
             sudah = sum(sudah),
             belum = sum(belum),
-            diterima = sum(diterima))
+            diterima = sum(diterima)) %>%
+  arrange(fakultas, jenjang, prodi)
 
 n_fak <- data_prod %>%
   group_by(fakultas) %>%
@@ -771,6 +812,44 @@ data %>%
     icon = "fa fa-save"
   )
 ```
+
+Row
+---
+
+### **Rekapitulasi Mahasiswa Baru di setiap Jenjang**
+
+```{r}
+data <- maba |>
+  group_by(jenjang, jalur) |>
+  summarize(n = n()) |>
+  pivot_wider(names_from = jalur, values_from = n)
+
+data <- data[,c(1:3, 6,7,4,8,9:12,5)]
+
+data[is.na(data)] <- 0
+names(data) <- c("Jenjang", "SNBP", "SNBT", "SMMPTN", "SMBNU", "UMM D3", "Alih Jenjang", "ADIK", "JPL", "S2", "S3", "PROFESI DOKTER")
+data$Jenjang <- c("D3", "Profesi", "S1", "S2", "S3")
+data <- adorn_totals(data, where = c("row", "col") , name = c("Total", "Total"))
+
+kable(data) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F,
+                latex_options = "scale_down") %>%
+  add_header_above(c(" " = 1, "Jalur Masuk" = 11," " = 1))
+
+data %>%
+  download_this(
+    output_name = "rekap maba per jenjang",
+    output_extension = ".xlsx",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+
+```
+
+
+
 
 Row
 ---
