@@ -430,6 +430,56 @@ data %>%
 
 ```
 
+### **Sebaran Mahasiswa Baru di tiap kab/kota**
+
+```{r}
+file <- list.files("G:/My Drive/DATABASE MHS/Profil Mhs",pattern = glob2rx("2023*"))
+
+data <- NULL
+for (i in 1:length(file)) {
+  raw <- read_excel(paste0("G:/My Drive/DATABASE MHS/Profil Mhs/", file[i]), skip = 10)
+  data <- rbind(data, raw)
+}
+
+data <- data[,c(3,20,21)]
+names(data) <- c("jk", "provinsi", "kab")
+
+data$provinsi <- toupper(data$provinsi)
+data$kab <- toupper(data$kab)
+data$provinsi <- str_replace(data$provinsi, "PROP. ", "")
+
+data$provinsi <- ifelse(data$provinsi == "BANTEN", "BANTEN", "zlainnya")
+data$kab <- ifelse(data$provinsi == "zlainnya", "zlainnya", data$kab)
+
+data <- data |>
+  group_by(provinsi, kab, jk) |>
+  summarise(jml = n())
+
+data <- data |> 
+  pivot_wider(names_from = jk, values_from = jml)
+
+data <- data[,-1]
+data <- adorn_totals(data, where = c("row", "col"), name = "JML")
+names(data) <- c("Kabupaten/Kota", "Laki-Laki", "Perempuan", "Jumlah")
+data[9,1] <- "Kota lain"
+
+kable(data) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F,
+                latex_options = "scale_down") %>%
+  add_header_above(c(" " = 1, "Jenis Kelamin" = 2, " " = 1))
+
+data %>%
+  download_this(
+    output_name = "maba per kota kab",
+    output_extension = ".xlsx",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+
+```
+
 
 ```{r eval=FALSE, include=FALSE}
 Row
