@@ -480,6 +480,85 @@ data %>%
 
 ```
 
+Row
+---
+
+### **Sebaran Mahasiswa Baru di tiap kab/kota berdasarkan jalur masuk**
+
+```{r}
+data <- NULL
+for (i in 1:length(file)) {
+  raw <- read_excel(paste0("G:/My Drive/DATABASE MHS/Profil Mhs/", file[i]), skip = 10)
+  data <- rbind(data, raw)
+}
+
+data <- data[,c(3,20,21,11,7)]
+names(data) <- c("jk", "provinsi", "kab", "jalur", "kode_prodi")
+data$kode_prodi <- as.numeric(data$kode_prodi)
+
+kode <- read_excel("G:/My Drive/DATABASE MHS/KODE FAKULTAS.xlsx",
+                   sheet = "Sheet2")
+kode <- kode[,c(2,5,7)]
+names(kode) <- c("kode", "prodi", "jenjang")
+
+data <- data |>
+  left_join(kode[,-2], by = c("kode_prodi" = "kode"))
+
+data <- data |>
+  mutate(jalur = case_when(
+    jalur == "Seleksi Nasional Berdasarkan Prestasi" ~ "01_SNBP",
+    jalur == "Seleksi Nasional Berdasarkan Test" ~ "02_SNBT",
+    jalur == "Seleksi Masuk Mandiri Perguruan Tinggi Negeri Wilayah Barat" ~ "03_SMMPTN",
+    jalur == "Seleksi Mandiri Berdasarkan Nilai UTBK" ~ "04_SMBNU",
+    jalur == "UMM D3" ~ "05_UMMD3",
+    jalur == "JALUR ALIH JENJANG (S1)" ~ "06_JAJ",
+    jalur == "Affirmasi Dikti" ~ "07_ADIK",
+    jalur == "Jalur Pindahan Lanjutan" ~ "08_JPL",
+    jalur == "UMM PASCASARJANA" & jenjang == "S2" ~ "09_S2",
+    jalur == "UMM PASCASARJANA" & jenjang == "S3" ~ "10_S3",
+    jalur == "Program Profesi Dokter" ~ "11_PR"
+  ))
+
+data$provinsi <- toupper(data$provinsi)
+data$kab <- toupper(data$kab)
+data$provinsi <- str_replace(data$provinsi, "PROP. ", "")
+
+data$provinsi <- ifelse(data$provinsi == "BANTEN", "BANTEN", "zlainnya")
+data$kab <- ifelse(data$provinsi == "zlainnya", "zlainnya", data$kab)
+
+data <- data |>
+  group_by(provinsi, kab, jalur) |>
+  summarise(jml = n())
+
+data <- data |> 
+  pivot_wider(names_from = jalur, values_from = jml)
+
+data <- data[,c(2:8,12,13,9:11)]
+
+names(data) <- c("Kab/Kota","SNBP", "SNBT", "SMMPTN", "SMBNU","UMM D3", "JAJ", "ADIK", "JPL", "S2", "S3", "Profesi")
+
+data[is.na(data)] <- 0
+data[9,1] <- "Kab/Kota lain"
+data <- adorn_totals(data, where = c("row", "col"), name = "JML")
+
+kable(data) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F,
+                latex_options = "scale_down") %>%
+  add_header_above(c(" " = 1, "Jenis Kelamin" = 11, " " = 1))
+
+data %>%
+  download_this(
+    output_name = "maba per kota kab per jalur masuk",
+    output_extension = ".xlsx",
+    button_label = "Download data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
+
+```
+
+
 
 ```{r eval=FALSE, include=FALSE}
 Row
@@ -779,6 +858,7 @@ Row
 ### **Rekapitulasi Mahasiswa Baru di setiap Fakultas**
 
 ```{r}
+kode <- read_excel("kode prodi siakad.xlsx")
 maba <- db |>
   select(fakultas, prodi, jalur, jenjang, nim) |>
   filter(nim == "diterima") |>
