@@ -544,7 +544,7 @@ data <- adorn_totals(data, where = c("row", "col"), name = "JML")
 kable(data) %>%
   kable_styling(bootstrap_options = "striped", full_width = F,
                 latex_options = "scale_down") %>%
-  add_header_above(c(" " = 1, "Jenis Kelamin" = 11, " " = 1))
+  add_header_above(c(" " = 1, "Jalur Masuk" = 11, " " = 1))
 
 data %>%
   download_this(
